@@ -40,7 +40,7 @@ def main():
         print(f"User prompt: {query}")
 
     
-    if len(response.function_calls) > 0:
+    if response.function_calls and len(response.function_calls) > 0:
         for function_call in response.function_calls:
             print(f"Calling function: {function_call.name}({function_call.args})")
     else:
