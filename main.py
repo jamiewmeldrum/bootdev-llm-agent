@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from functions.functions_schema import available_functions
+from config import system_prompt
+
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
 
@@ -26,13 +29,22 @@ def main():
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model="gemini-2.0-flash-001", 
-        contents=messages
+        contents=messages,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            tools=[available_functions],
+            ),
         )
     
     if verbose:
         print(f"User prompt: {query}")
-        
-    print(f"Response: {response.text}")
+
+    
+    if len(response.function_calls) > 0:
+        for function_call in response.function_calls:
+            print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print(f"Response: {response.text}")
 
     if verbose:
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
