@@ -14,6 +14,8 @@ All paths you provide should be relative to the working directory. You do not ne
 
 Any argument in the schema mentioned to be optional should be treated as optional - don't request arguments to be provided in this case, just execute the file without any further checking. Do use them if they are provided.
 
+You can use the functions to find out information you need. For example, if I ask you to tell me about the calculator, you may choose to list directorties then inspect the content of the python files in the calculator directory.
+
 Example interactions:
 User: run tests.py
 Assistant: [function_call]

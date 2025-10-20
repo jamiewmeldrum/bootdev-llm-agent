@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from dotenv import load_dotenv
 from google import genai
@@ -28,6 +29,20 @@ def main():
     ]
 
     client = genai.Client(api_key=api_key)
+    for i in range(20):
+        try:
+            response = generate_content(verbose, query, messages, client)
+            if response:
+                print(f"Response: {response}")
+                break
+        except Exception as e:
+            if verbose:
+                print("ERROR - something went wrong. Will try again after a small delay")
+                print(e)
+                time.sleep(0.5)
+
+
+def generate_content(verbose, query, messages, client):
     response = client.models.generate_content(
         model="gemini-2.0-flash-001", 
         contents=messages,
@@ -40,6 +55,8 @@ def main():
     if verbose:
         print(f"User prompt: {query}")
 
+    # Add candidates to messages to persist context
+    map(lambda x: messages.append(x.content), response.candidates)
     
     if response.function_calls and len(response.function_calls) > 0:
         for function_call in response.function_calls:
@@ -50,8 +67,20 @@ def main():
             elif verbose:
                 print(f"-> {function_call_response}")
 
+            #Add function calls to messages to persist context
+            messages.append(
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(
+                            text=f"{function_call_response}",
+                        )
+                    ],
+                )
+            )
+
     else:
-        print(f"Response: {response.text}")
+        return response.text
 
     if verbose:
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
