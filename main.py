@@ -7,6 +7,7 @@ from google.genai import types
 
 from functions.functions_schema import available_functions
 from config import system_prompt
+from functions.function_caller import call_function
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -42,7 +43,13 @@ def main():
     
     if response.function_calls and len(response.function_calls) > 0:
         for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
+            function_call_response = call_function(function_call, verbose).parts[0].function_response.response
+
+            if not function_call_response:
+                raise Exception("Response from running function went badly wrong")
+            elif verbose:
+                print(f"-> {function_call_response}")
+
     else:
         print(f"Response: {response.text}")
 

@@ -47,6 +47,7 @@ schema_run_python_file = types.FunctionDeclaration(
                 description="Array of optional args to path into execution command",
             ),
         },
+        required=["file_path"],
     ),
 )
 
